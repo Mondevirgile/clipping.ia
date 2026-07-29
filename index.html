@@ -318,7 +318,7 @@ async function analyzeWithClaude(apiKey, transcript){
 }
 
 async function analyzeWithGemini(apiKey, transcript){
-  const model = 'gemini-2.5-flash';
+  const model = 'gemini-3.5-flash';
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: 'POST',
     headers: {
@@ -398,52 +398,4 @@ runBtn.addEventListener('click', async () => {
 
   if (!apiKey){ setStatus('⚠️ Ajoute ta clé API à l\'étape 1.'); return; }
   if (!videoFile){ setStatus('⚠️ Ajoute une vidéo à l\'étape 2.'); return; }
-  if (!transcript){ setStatus('⚠️ Colle la transcription à l\'étape 3.'); return; }
-
-  runBtn.disabled = true;
-  resultsEl.innerHTML = '';
-
-  try {
-    setStatus(`🧠 ${provider === 'gemini' ? 'Gemini' : 'Claude'} analyse la transcription et repère les meilleurs moments...`);
-    const clips = await analyze(apiKey, transcript);
-
-    setStatus(`✅ ${clips.length} moments forts détectés. Chargement du moteur de montage...`);
-    const ff = await loadFFmpeg();
-    await ff.writeFile('input.mp4', await fetchFile(videoFile));
-
-    for (let i = 0; i < clips.length; i++){
-      const clip = clips[i];
-      const hookText = clip.subtitles && clip.subtitles[0] ? clip.subtitles[0].text : clip.caption_social;
-      setStatus(`✂️ Découpage du clip ${i+1}/${clips.length} avec sous-titres complets...`);
-      setProgress(0);
-      const blob = await cutClip(ff, clip, i);
-      const url = URL.createObjectURL(blob);
-
-      const card = document.createElement('div');
-      card.className = 'clip-card';
-      card.innerHTML = `
-        <div class="clip-badge">${i+1}</div>
-        <div style="flex:1">
-          <h3>${hookText}</h3>
-          <p>${clip.reason}</p>
-          <div class="meta">${clip.start} → ${clip.end} · ${clip.caption_social}</div>
-          <video controls src="${url}"></video><br>
-          <a class="dl" href="${url}" download="clipforge_${i+1}.mp4">⬇ Télécharger le clip</a>
-        </div>
-      `;
-      resultsEl.appendChild(card);
-    }
-
-    setStatus(`🎉 Terminé ! ${clips.length} clips prêts à publier, sous-titres inclus.`);
-    progressBar.style.display = 'none';
-  } catch (err){
-    console.error(err);
-    setStatus('❌ Erreur : ' + err.message);
-  } finally {
-    runBtn.disabled = false;
-  }
-});
-</script>
-
-</body>
-</html>
+  if (!transcript){ setStatus('⚠️ Colle la transcription à l\'étape 3.'); return
