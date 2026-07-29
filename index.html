@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClipForge — Découpe tes vidéos virales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A0E1A;
+    --navy-2:#111729;
+    --gold:#D4AF37;
+    --gold-soft:#F0D77B;
+    --cyan:#22D3EE;
+    --violet:#7C6CF5;
+    --text:#E8E6DC;
+    --text-dim:#8B93A8;
+    --line:#1F2740;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:radial-gradient(ellipse at top, #131A2E 0%, var(--navy) 55%);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding-bottom:80px;
+  }
+  h1,h2,h3,.brand{font-family:'Space Grotesk',sans-serif;}
+  .wrap{max-width:820px;margin:0 auto;padding:0 20px;}
+
+  header{padding:48px 0 32px;text-align:center;border-bottom:1px solid var(--line);}
+  .brand{font-size:15px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;}
+  header h1{font-size:clamp(28px,5vw,42px);margin:0 0 12px;line-height:1.15;
+    background:linear-gradient(100deg,var(--text) 20%,var(--gold-soft) 55%,var(--cyan) 90%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  header p{color:var(--text-dim);font-size:15px;max-width:520px;margin:0 auto;}
+
+  .disclaimer{
+    margin:28px auto 0;max-width:820px;padding:14px 18px;border:1px solid #3A2E12;
+    background:#1A1608;border-radius:10px;color:#E0C878;font-size:13.5px;line-height:1.5;
+  }
+
+  section.step{
+    margin-top:36px;border:1px solid var(--line);background:linear-gradient(160deg,var(--navy-2),#0D1220);
+    border-radius:16px;padding:26px 24px;position:relative;
+  }
+  .step-index{
+    position:absolute;top:-14px;left:24px;background:var(--navy);border:1px solid var(--gold);
+    color:var(--gold);font-family:'Space Grotesk';font-size:12px;padding:3px 10px;border-radius:20px;letter-spacing:.05em;
+  }
+  section.step h2{font-size:18px;margin:6px 0 4px;color:var(--text);}
+  section.step .hint{color:var(--text-dim);font-size:13.5px;margin-bottom:16px;line-height:1.5;}
+
+  input[type=password], textarea, input[type=file], select{
+    width:100%;background:#0B101E;border:1px solid var(--line);color:var(--text);
+    border-radius:10px;padding:12px 14px;font-family:'Inter';font-size:14px;outline:none;
+  }
+  select{appearance:none;cursor:pointer;}
+  textarea{min-height:130px;resize:vertical;line-height:1.5;}
+  input[type=password]:focus, textarea:focus, select:focus{border-color:var(--cyan);}
+  label.small{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:6px;}
+
+  .provider-tabs{display:flex;gap:10px;margin-bottom:16px;}
+  .provider-tab{
+    flex:1;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0B101E;
+    cursor:pointer;text-align:center;font-size:13.5px;color:var(--text-dim);transition:.15s;
+  }
+  .provider-tab.active{border-color:var(--gold);color:var(--gold-soft);background:#16140A;}
+  .provider-tab .tag{display:block;font-size:11px;margin-top:3px;color:var(--cyan);}
+
+  .dropzone{
+    border:1.5px dashed var(--line);border-radius:12px;padding:26px;text-align:center;
+    cursor:pointer;transition:.2s;color:var(--text-dim);font-size:14px;
+  }
+  .dropzone:hover{border-color:var(--cyan);color:var(--text);}
+  .dropzone strong{color:var(--gold-soft);}
+  video#preview{width:100%;border-radius:10px;margin-top:14px;display:none;background:#000;}
+
+  button.primary{
+    margin-top:18px;width:100%;padding:14px;border:none;border-radius:10px;
+    background:linear-gradient(100deg,var(--gold) 0%,var(--gold-soft) 100%);
+    color:#1A1400;font-family:'Space Grotesk';font-weight:700;font-size:15px;cursor:pointer;
+    transition:.15s;
+  }
+  button.primary:hover{filter:brightness(1.08);}
+  button.primary:disabled{opacity:.4;cursor:not-allowed;filter:none;}
+
+  .status{margin-top:12px;font-size:13px;color:var(--cyan);min-height:18px;}
+  .progress{height:6px;border-radius:6px;background:#0B101E;overflow:hidden;margin-top:10px;display:none;}
+  .progress > div{height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--violet));transition:width .2s;}
+
+  .clip-card{
+    border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:14px;
+    background:#0B101E;display:flex;gap:14px;align-items:flex-start;
+  }
+  .clip-badge{
+    flex-shrink:0;width:34px;height:34px;border-radius:50%;background:var(--violet);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:14px;
+  }
+  .clip-card h3{margin:0 0 4px;font-size:15px;color:var(--gold-soft);}
+  .clip-card p{margin:0 0 8px;font-size:13.5px;color:var(--text-dim);line-height:1.5;}
+  .clip-card .meta{font-size:12px;color:var(--cyan);margin-bottom:8px;}
+  .clip-card a.dl{
+    display:inline-block;font-size:13px;padding:8px 14px;border-radius:8px;
+    background:var(--navy);border:1px solid var(--gold);color:var(--gold-soft);text-decoration:none;
+  }
+  .clip-card video{width:100%;max-width:220px;border-radius:8px;margin-top:8px;background:#000;}
+
+  details.guide{margin-top:36px;border:1px solid var(--line);border-radius:16px;background:var(--navy-2);padding:22px 24px;}
+  details.guide summary{cursor:pointer;font-family:'Space Grotesk';font-size:16px;color:var(--gold-soft);}
+  details.guide ol{color:var(--text-dim);font-size:13.5px;line-height:1.9;padding-left:20px;margin-top:14px;}
+  details.guide code{background:#0B101E;padding:2px 6px;border-radius:5px;color:var(--cyan);font-size:12.5px;}
+  details.guide a{color:var(--cyan);}
+
+  footer{text-align:center;color:var(--text-dim);font-size:12.5px;margin-top:50px;padding:0 20px;}
+  footer a{color:var(--cyan);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">MONDE S. Virgile — Lab</div>
+    <h1>ClipForge</h1>
+    <p>Transforme une vidéo longue en clips courts prêts pour TikTok, Shorts et Reels, avec sous-titres complets incrustés. L'IA repère les meilleurs moments, tu gardes le contrôle.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="disclaimer">
+    ⚠️ Honnêteté d'abord : aucun outil ne peut forcer un algorithme à pousser une vidéo. ClipForge structure ton contenu pour que l'algorithme le lise bien — hook fort dès la 1ère seconde, sous-titres lisibles, rythme serré — ce sont exactement les signaux (rétention, complétion de vue) que les plateformes utilisent pour décider de pousser une vidéo. Le reste dépend du contenu lui-même.
+    <br><br>
+    100% statique — hébergeable gratuitement sur Netlify ou InfinityFree. Aucune donnée n'est envoyée à un serveur autre que celui de l'IA choisie ci-dessous.
+  </div>
+
+  <section class="step">
+    <span class="step-index">ÉTAPE 1</span>
+    <h2>Choisis ton IA (gratuite disponible)</h2>
+    <p class="hint">Tu n'as pas de budget ? Choisis <strong>Google Gemini</strong> — sa clé API est gratuite en permanence pour ce type d'usage, aucune carte bancaire requise. Claude est plus précis mais donne seulement ~5$ gratuits à l'inscription.</p>
+    <div class="provider-tabs">
+      <div class="provider-tab active" data-provider="gemini">
+        Google Gemini
+        <span class="tag">100% gratuit</span>
+      </div>
+      <div class="provider-tab" data-provider="claude">
+        Claude (Anthropic)
+        <span class="tag">~5$ offerts</span>
+      </div>
+    </div>
+    <label class="small" id="keyLabel">Clé API Gemini</label>
+    <input type="password" id="apiKey" placeholder="Colle ta clé API ici">
+    <p class="hint" id="keyHelp" style="margin-top:10px;margin-bottom:0;">
+      Récupère ta clé gratuite sur <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--cyan)">aistudio.google.com/apikey</a> — connexion avec un compte Google, clé générée en 10 secondes, sans carte bancaire.
+    </p>
+  </section>
+
+  <section class="step">
+    <span class="step-index">ÉTAPE 2</span>
+    <h2>Ta vidéo source</h2>
+    <p class="hint">Interview, stream, sketch, podcast filmé... — idéalement moins de 15 minutes pour un traitement fluide dans le navigateur.</p>
+    <div class="dropzone" id="dropzone">
+      📹 Clique ou glisse ta vidéo ici <br><strong>(.mp4, .mov, .webm)</strong>
+    </div>
+    <input type="file" id="videoInput" accept="video/*" style="display:none">
+    <video id="preview" controls></video>
+  </section>
+
+  <section class="step">
+    <span class="step-index">ÉTAPE 3</span>
+    <h2>Transcription</h2>
+    <p class="hint">Colle la transcription avec timestamps (ex : sur YouTube, sous la vidéo → "..." → "Afficher la transcription", ou un fichier .srt). Format libre, l'IA comprend le texte + les temps.</p>
+    <textarea id="transcript" placeholder="0:00 Salut tout le monde...&#10;0:14 Alors aujourd'hui je vais vous montrer...&#10;1:32 Attendez c'est là que ça devient fou..."></textarea>
+  </section>
+
+  <section class="step">
+    <span class="step-index">ÉTAPE 4</span>
+    <h2>Analyse & découpe</h2>
+    <p class="hint">L'IA propose 3 à 6 clips avec les moments les plus forts, un hook, et des sous-titres synchronisés sur toute la durée de chaque clip. Puis ils sont découpés et recadrés en 9:16 directement ici, avec les sous-titres incrustés.</p>
+    <button class="primary" id="runBtn">🧠 Analyser et générer les clips</button>
+    <div class="progress" id="progressBar"><div id="progressFill"></div></div>
+    <div class="status" id="status"></div>
+    <div id="results"></div>
+  </section>
+
+  <details class="guide">
+    <summary>📘 Guide : héberger ClipForge gratuitement (Netlify ou InfinityFree)</summary>
+    <ol>
+      <li><strong>Option Netlify (la plus simple)</strong> — Va sur <a href="https://app.netlify.com/drop" target="_blank">app.netlify.com/drop</a>. Glisse-dépose le fichier <code>index.html</code> directement sur la page. En 10-15 secondes, Netlify te donne une URL publique (ex: <code>tonsite.netlify.app</code>). Pas de compte requis pour ce mode "drop", mais crée un compte gratuit si tu veux pouvoir remettre à jour le site plus tard.</li>
+      <li><strong>Personnaliser le nom du site sur Netlify</strong> — Une fois déployé, va dans <code>Site settings → Change site name</code> pour choisir une URL du type <code>clipforge-virgile.netlify.app</code>.</li>
+      <li><strong>Option InfinityFree</strong> — Crée un compte sur <a href="https://infinityfree.net" target="_blank">infinityfree.net</a>, crée un nouvel hébergement (choisis un sous-domaine gratuit type <code>tonnom.infinityfreeapp.com</code>). Dans le "Panneau de contrôle" → <code>Gestionnaire de fichiers</code> (ou via FTP avec FileZilla), va dans le dossier <code>htdocs</code> et uploade <code>index.html</code> dedans. Le site est en ligne en 1 à 2 minutes (parfois jusqu'à 30 min le temps que le DNS se propage).</li>
+      <li><strong>Nom de domaine perso (optionnel)</strong> — Les deux plateformes permettent de connecter un nom de domaine acheté ailleurs (Namecheap, etc.) si tu veux un lien du style <code>clipforge.com</code> plus tard.</li>
+      <li><strong>Mises à jour</strong> — Pour changer quoi que ce soit dans l'app, remplace simplement le fichier <code>index.html</code> par la nouvelle version sur Netlify (glisser-déposer à nouveau) ou InfinityFree (re-upload par FTP).</li>
+    </ol>
+  </details>
+</div>
+
+<footer>
+  Construit pour MONDE S. Virgile · Fichier statique unique, aucun serveur requis · IA au choix : Google Gemini (gratuit) ou Claude (Anthropic)
+</footer>
+
+<script type="module">
+import { FFmpeg } from "https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js";
+import { fetchFile, toBlobURL } from "https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js";
+
+const dropzone = document.getElementById('dropzone');
+const videoInput = document.getElementById('videoInput');
+const preview = document.getElementById('preview');
+const runBtn = document.getElementById('runBtn');
+const statusEl = document.getElementById('status');
+const progressBar = document.getElementById('progressBar');
+const progressFill = document.getElementById('progressFill');
+const resultsEl = document.getElementById('results');
+const apiKeyInput = document.getElementById('apiKey');
+const keyLabel = document.getElementById('keyLabel');
+const keyHelp = document.getElementById('keyHelp');
+
+let videoFile = null;
+let ffmpeg = null;
+let provider = 'gemini';
+
+document.querySelectorAll('.provider-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.provider-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    provider = tab.dataset.provider;
+    if (provider === 'gemini'){
+      keyLabel.textContent = 'Clé API Gemini';
+      keyHelp.innerHTML = 'Récupère ta clé gratuite sur <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--cyan)">aistudio.google.com/apikey</a> — connexion avec un compte Google, clé générée en 10 secondes, sans carte bancaire.';
+    } else {
+      keyLabel.textContent = 'Clé API Claude';
+      keyHelp.innerHTML = 'Crée une clé sur <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--cyan)">console.anthropic.com</a> — les nouveaux comptes reçoivent ~5$ de crédit gratuit (pas de carte requise, vérification par téléphone).';
+    }
+    try { apiKeyInput.value = localStorage.getItem('clipforge_key_' + provider) || ''; } catch(e){ apiKeyInput.value = ''; }
+  });
+});
+
+try {
+  const saved = localStorage.getItem('clipforge_key_gemini');
+  if (saved) apiKeyInput.value = saved;
+} catch(e) {}
+apiKeyInput.addEventListener('change', (e) => {
+  try { localStorage.setItem('clipforge_key_' + provider, e.target.value); } catch(err) {}
+});
+
+dropzone.addEventListener('click', () => videoInput.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.style.borderColor = 'var(--cyan)'; });
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+videoInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+function handleFile(file){
+  videoFile = file;
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+  dropzone.innerHTML = `✅ <strong>${file.name}</strong> chargée`;
+}
+
+function setStatus(msg){ statusEl.textContent = msg; }
+function setProgress(pct){
+  progressBar.style.display = 'block';
+  progressFill.style.width = pct + '%';
+}
+
+async function loadFFmpeg(){
+  if (ffmpeg) return ffmpeg;
+  setStatus('Chargement du moteur vidéo (une seule fois)...');
+  ffmpeg = new FFmpeg();
+  ffmpeg.on('progress', ({ progress }) => setProgress(Math.round(progress * 100)));
+  const base = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+  await ffmpeg.load({
+    coreURL: await toBlobURL(`${base}/ffmpeg-core.js`, 'text/javascript'),
+    wasmURL: await toBlobURL(`${base}/ffmpeg-core.wasm`, 'application/wasm'),
+  });
+  return ffmpeg;
+}
+
+function timeToSeconds(t){
+  const parts = String(t).split(':').map(Number);
+  if (parts.some(isNaN)) return 0;
+  if (parts.length === 3) return parts[0]*3600 + parts[1]*60 + parts[2];
+  if (parts.length === 2) return parts[0]*60 + parts[1];
+  return parts[0];
+}
+
+const SYSTEM_PROMPT = `Tu es un monteur expert en contenu viral court format (TikTok, Reels, Shorts). On te donne une transcription avec timestamps d'une vidéo longue.
+Ta tâche: identifier entre 3 et 6 segments (25 à 70 secondes chacun) qui ont le plus fort potentiel viral: punchlines, moments drôles, rebondissements, phrases choc, émotion forte. Le premier sous-titre de chaque clip doit être un hook qui donne envie de rester dans la première seconde.
+Découpe aussi les sous-titres de chaque clip en courtes lignes de 3 à 6 mots (comme des sous-titres TikTok), couvrant TOUTE la durée du clip du début à la fin, avec des temps t0/t1 RELATIFS AU DEBUT DU CLIP (le premier commence à t0=0).
+Réponds UNIQUEMENT en JSON valide, sans texte autour, sans balises markdown, sous cette forme exacte:
+{"clips":[{"start":"0:14","end":"0:52","reason":"pourquoi ce moment est fort, en une phrase","caption_social":"légende courte pour la publication","subtitles":[{"t0":0,"t1":2.5,"text":"Attends tu vas pas croire ça"},{"t0":2.5,"t1":5,"text":"la suite"}]}]}`;
+
+async function analyzeWithClaude(apiKey, transcript){
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-5',
+      max_tokens: 3000,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: transcript }]
+    })
+  });
+  if (!res.ok){
+    const errText = await res.text();
+    throw new Error(`Erreur API Claude (${res.status}): ${errText.slice(0,200)}`);
+  }
+  const data = await res.json();
+  const textBlock = data.content.find(b => b.type === 'text');
+  return parseClipsJSON(textBlock.text);
+}
+
+async function analyzeWithGemini(apiKey, transcript){
+  const model = 'gemini-2.5-flash';
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': apiKey
+    },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: 'user', parts: [{ text: transcript }] }],
+      generationConfig: { responseMimeType: 'application/json' }
+    })
+  });
+  if (!res.ok){
+    const errText = await res.text();
+    throw new Error(`Erreur API Gemini (${res.status}): ${errText.slice(0,200)}`);
+  }
+  const data = await res.json();
+  const text = data.candidates[0].content.parts[0].text;
+  return parseClipsJSON(text);
+}
+
+function parseClipsJSON(rawText){
+  let clean = rawText.trim().replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim();
+  const parsed = JSON.parse(clean);
+  return parsed.clips;
+}
+
+async function analyze(apiKey, transcript){
+  return provider === 'gemini' ? analyzeWithGemini(apiKey, transcript) : analyzeWithClaude(apiKey, transcript);
+}
+
+function escapeDrawtext(str){
+  return str
+    .replace(/\\/g, '')
+    .replace(/'/g, '')
+    .replace(/:/g, '\\:')
+    .replace(/%/g, '')
+    .slice(0, 70);
+}
+
+function buildSubtitleFilters(subtitles){
+  return subtitles.map(sub => {
+    const text = escapeDrawtext(sub.text);
+    return `drawtext=text='${text}':fontcolor=white:fontsize=58:box=1:boxcolor=black@0.6:boxborderw=18:x=(w-text_w)/2:y=h*0.80:enable='between(t,${sub.t0},${sub.t1})'`;
+  }).join(',');
+}
+
+async function cutClip(ff, clip, index){
+  const inputName = 'input.mp4';
+  const outputName = `clip_${index}.mp4`;
+
+  const startSec = timeToSeconds(clip.start);
+  const endSec = timeToSeconds(clip.end);
+  const duration = Math.max(1, endSec - startSec);
+
+  const cropScale = `crop=ih*9/16:ih,scale=1080:1920`;
+  const subtitleChain = buildSubtitleFilters(clip.subtitles || []);
+  const vf = subtitleChain ? `${cropScale},${subtitleChain}` : cropScale;
+
+  await ff.exec([
+    '-ss', String(startSec),
+    '-i', inputName,
+    '-t', String(duration),
+    '-vf', vf,
+    '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
+    '-c:a', 'aac',
+    outputName
+  ]);
+
+  const data = await ff.readFile(outputName);
+  return new Blob([data.buffer], { type: 'video/mp4' });
+}
+
+runBtn.addEventListener('click', async () => {
+  const apiKey = apiKeyInput.value.trim();
+  const transcript = document.getElementById('transcript').value.trim();
+
+  if (!apiKey){ setStatus('⚠️ Ajoute ta clé API à l\'étape 1.'); return; }
+  if (!videoFile){ setStatus('⚠️ Ajoute une vidéo à l\'étape 2.'); return; }
+  if (!transcript){ setStatus('⚠️ Colle la transcription à l\'étape 3.'); return; }
+
+  runBtn.disabled = true;
+  resultsEl.innerHTML = '';
+
+  try {
+    setStatus(`🧠 ${provider === 'gemini' ? 'Gemini' : 'Claude'} analyse la transcription et repère les meilleurs moments...`);
+    const clips = await analyze(apiKey, transcript);
+
+    setStatus(`✅ ${clips.length} moments forts détectés. Chargement du moteur de montage...`);
+    const ff = await loadFFmpeg();
+    await ff.writeFile('input.mp4', await fetchFile(videoFile));
+
+    for (let i = 0; i < clips.length; i++){
+      const clip = clips[i];
+      const hookText = clip.subtitles && clip.subtitles[0] ? clip.subtitles[0].text : clip.caption_social;
+      setStatus(`✂️ Découpage du clip ${i+1}/${clips.length} avec sous-titres complets...`);
+      setProgress(0);
+      const blob = await cutClip(ff, clip, i);
+      const url = URL.createObjectURL(blob);
+
+      const card = document.createElement('div');
+      card.className = 'clip-card';
+      card.innerHTML = `
+        <div class="clip-badge">${i+1}</div>
+        <div style="flex:1">
+          <h3>${hookText}</h3>
+          <p>${clip.reason}</p>
+          <div class="meta">${clip.start} → ${clip.end} · ${clip.caption_social}</div>
+          <video controls src="${url}"></video><br>
+          <a class="dl" href="${url}" download="clipforge_${i+1}.mp4">⬇ Télécharger le clip</a>
+        </div>
+      `;
+      resultsEl.appendChild(card);
+    }
+
+    setStatus(`🎉 Terminé ! ${clips.length} clips prêts à publier, sous-titres inclus.`);
+    progressBar.style.display = 'none';
+  } catch (err){
+    console.error(err);
+    setStatus('❌ Erreur : ' + err.message);
+  } finally {
+    runBtn.disabled = false;
+  }
+});
+</script>
+
+</body>
+</html>
